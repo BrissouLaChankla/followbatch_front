@@ -1,6 +1,7 @@
 'use client'
 import Utils from '@/utils/all'
-import { useState, useEffect, useRef } from "react";
+import { useRef } from "react";
+import Nav from './Nav';
 import useSWR from 'swr'
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
@@ -10,10 +11,9 @@ export default function Main() {
     const { data: data, error } = useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/batchs/all/${Utils.getCurrentDate() || null}`, fetcher);
   
     if (error) return <div>Failed to load</div>
-    if (!data) return <div>Loading...</div>
+    if (!data) return <div>Chargement...</div>
   
     const currentBatch = data.allBatchs.find(batch => batch.is_current === true);
-    const otherBatchs = data.allBatchs.filter(batch => batch.is_current === false);
   
     const envoyerDonnees = async () => {
       const formData = new FormData(formRef.current);
@@ -31,8 +31,7 @@ export default function Main() {
       })
         .then(response => response.json())
         .then(data => {
-          console.log("Valeurs : ")
-          console.log(data)
+          console.log("✅ Données synchro")
         })
     };
   
@@ -44,19 +43,7 @@ export default function Main() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      <div className='p-4 text-center flex items-center justify-between font-bold'>
-        <div className="w-32"></div>
-        <div className="flex items-center">
-          <span className='text-xl me-2'>
-            📅
-          </span>
-          {Utils.getCurrentDate()}
-        </div>
-        <select className="select select-bordered w-32" onChange={(e) => changeBatch(e.target.value)}>
-          <option value={currentBatch.number}>Batch {currentBatch.number}</option>
-
-        </select>
-      </div>
+      <Nav />
       <form ref={formRef} className='flex items-center gap-10 justify-between flex-wrap bg-stone-200 content-center pt-10 grow flex-col '
         onChange={() => submitStudentsInfo()}
       >
@@ -81,7 +68,6 @@ export default function Main() {
 }
 
 function TextareaCard(props) {
-    console.log(props)
     return (
       <div className="card w-96 shadow-xl bg-white">
         <div className="card-body p-5">

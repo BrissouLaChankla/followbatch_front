@@ -21,4 +21,12 @@ function debounce(func, wait) {
     };
 }
 
-export default { getCurrentDate, debounce }; 
+function createDateFromString(dateString) {
+    var parts = dateString.split("/");
+
+    var formattedDate = parts[2] + "-" + parts[1] + "-" + parts[0];
+
+    return new Date(formattedDate);
+}
+
+export default { getCurrentDate, debounce, createDateFromString }; 
