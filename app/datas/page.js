@@ -64,7 +64,16 @@ function Row(props) {
                         <div className='flex min-h-20 '>
                             <div>
                                 <h3 className="font-bold">🤖 Résumé de la semaine {props.jour/5} :</h3>
-                                <div className='whitespace-pre-wrap' >{weekValue.summary}</div>
+                                <div className='whitespace-pre-wrap' >{
+                                weekValue ?
+
+                                weekValue.summary
+                                
+                                :
+                                
+                                "Le résumé n'est pas encore généré!"
+                                }</div>
+
                             </div>
                         </div>
                     </td>
