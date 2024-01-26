@@ -3,7 +3,7 @@ import useSWR from 'swr'
 import Utils from '@/utils/all'
 import Nav from '@/components/Nav'
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function page() {
 
@@ -16,6 +16,7 @@ export default function page() {
     }, [])
 
 
+
     const { data: data, error } = useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/days/all`, fetcher);
     const { data: weeks, weekerror } = useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/weeks/all`, fetcher);
 
@@ -24,8 +25,11 @@ export default function page() {
 
 
     const rows = data.days.map((day, i) => { return { ...day, jour: i + 1 } })
-                            .sort((a, b) => Utils.createDateFromString(b.date) - Utils.createDateFromString(a.date))
-                            .map((el) => <Row key={el.jour} {...el} weeks={weeks} />)
+        .sort((a, b) => Utils.createDateFromString(b.date) - Utils.createDateFromString(a.date))
+        .map((el) => <Row key={el.jour} {...el} weeks={weeks} />)
+
+
+
 
     return (
         <div className='max-w-7xl m-auto'>
@@ -52,26 +56,49 @@ export default function page() {
 
 
 function Row(props) {
-    let weekValue = props.weeks.weeks.find(week => week.week === props.jour/5) || null
+    const [generating, setGenerating] = useState(false);
+
+    
+    const generateWeekAI = day => {
+        setGenerating(true);
+
+        fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/days/weekcron/' + day)
+            .then(response => response.json())
+            .then((resume) => {
+                console.log(resume)
+                setGenerating(false);
+
+            })
+    }
+    let weekValue = props.weeks.weeks.find(week => week.week === props.jour / 5) || null
     return (
         <>
             {
-                
+
                 props.jour % 5 === 0 &&
                 <tr className='bg-gray-200'>
                     <td colSpan={3} className='text-xl table-cell'>⬇️</td>
                     <td colSpan={2} className="table-cell ">
                         <div className='flex min-h-20 '>
                             <div>
-                                <h3 className="font-bold">🤖 Résumé de la semaine {props.jour/5} :</h3>
+                                <h3 className="font-bold">🤖 Résumé de la semaine {props.jour / 5} :</h3>
                                 <div className='whitespace-pre-wrap' >{
-                                weekValue ?
+                                    weekValue ?
 
-                                weekValue.summary
-                                
-                                :
-                                
-                                "Le résumé n'est pas encore généré!"
+                                        weekValue.summary
+
+                                        :
+                                        (
+                                            <div className="flex gap-2 items-center">
+                                                <div className="">Le résumé n'est pas encore généré :</div>
+                                                {
+                                                    generating ?
+                                                        <div className="btn btn-primary btn-sm" disabled="disabled"><span className="loading loading-bars loading-xs"></span></div>
+                                                        :
+                                                        <div className="btn btn-primary btn-sm" onClick={() => generateWeekAI(props.jour / 5)}>Générer</div>
+                                                }
+                                            </div>
+                                        )
                                 }</div>
 
                             </div>
