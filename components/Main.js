@@ -1,20 +1,24 @@
 'use client'
 import Utils from '@/utils/all'
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Nav from './Nav';
 import useSWR from 'swr'
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 export default function Main() {
-
+  const [date, setDate] = useState(Utils.getCurrentDate())
   const formRef = useRef();
 
-  const { data: data, error } = useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/batchs/all/${Utils.getCurrentDate() || null}`, fetcher);
+  const { data: data, error } = useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/batchs/all/${date || null}`, fetcher);
 
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Chargement...</div>
 
-  const currentBatch = data.allBatchs.find(batch => batch.is_current === true);
+  const generatedaily = async () => {
+    const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/days/generatedaily/' + date)
+    const data = await response.json();
+    return data;
+  }
 
   const envoyerDonnees = async () => {
     const formData = new FormData(formRef.current);
@@ -22,7 +26,7 @@ export default function Main() {
     for (let key of formData.keys()) {
       formValues[key] = formData.get(key);
     }
-    formValues.date = Utils.getCurrentDate()
+    formValues.date = date
     fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/days/store', {
       method: "POST",
       headers: {
@@ -33,6 +37,10 @@ export default function Main() {
       .then(response => response.json())
       .then(data => {
         console.log("✅ Données synchro")
+        console.log("Generation du daily...")
+        generatedaily().then(() => {
+          console.log("daily généré ✅")
+        })
       })
   };
 
@@ -42,9 +50,14 @@ export default function Main() {
     console.log(e)
   }
 
+  const selectDay = date => {
+    setDate(date);
+  }
+
+
   return (
     <main className="min-h-screen flex flex-col">
-      <Nav />
+      <Nav selectDay={selectDay} date={date} />
       {
 
         Utils.isWeekend() ?

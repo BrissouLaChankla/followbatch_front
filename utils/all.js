@@ -37,4 +37,15 @@ function isWeekend() {
     return false;
 }
 
-export default { getCurrentDate, debounce, createDateFromString, isWeekend }; 
+
+function sortStringDate(a, b) {
+    var dateA = new Date(a.date.split('/').reverse().join('/'));
+    var dateB = new Date(b.date.split('/').reverse().join('/'));
+
+    // Comparaison des dates
+    return dateB - dateA;
+}
+
+
+
+export default { getCurrentDate, debounce, createDateFromString, isWeekend, sortStringDate }; 
